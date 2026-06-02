@@ -1,0 +1,13 @@
+{
+  "$schema": "./node_modules/oxfmt/configuration_schema.json",
+  "printWidth": 120,
+  "semi": false, // Add semicolons (default: true)
+  "singleQuote": true, // Use single quotes (default: false)
+  "experimentalSortImports": {
+    "enabled": true,
+  }, // Configure import sorting (disabled by default)
+  "experimentalSortPackageJson": true, // Configure package.json sorting (enabled by default)
+  "experimentalTailwindcss": {
+    "enabled": true,
+  }, // Enable Tailwind CSS class sorting (disabled by default)
+}
