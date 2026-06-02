@@ -1,0 +1,10 @@
+{
+  "name": "mockup",
+  "type": "module",
+  "private": true,
+  "module": "src/index.ts",
+  "devDependencies": {},
+  "dependencies": {
+    "voc-server": "workspace:*"
+  }
+}
