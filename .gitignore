@@ -2,6 +2,7 @@
 
 *.db
 *.db-*
+plugins/plugins.json
 
 *.tsbuildinfo
 bun.lockb
