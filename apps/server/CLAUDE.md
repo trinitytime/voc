@@ -1,4 +1,6 @@
 
+**Exception for this app**: `apps/server` runs on Node.js (via `nub`, not `bun`/`bun --watch`), because `better-sqlite3` is a native addon that Bun cannot `dlopen`. The general Bun-first guidance below does not apply here — see the APIs section for what this app actually uses.
+
 Default to using Bun instead of Node.js.
 
 - Use `bun <file>` instead of `node <file>` or `ts-node <file>`
@@ -11,13 +13,11 @@ Default to using Bun instead of Node.js.
 
 ## APIs
 
-- `Bun.serve()` supports WebSockets, HTTPS, and routes. Don't use `express`.
-- `bun:sqlite` for SQLite. Don't use `better-sqlite3`.
-- `Bun.redis` for Redis. Don't use `ioredis`.
-- `Bun.sql` for Postgres. Don't use `pg` or `postgres.js`.
-- `WebSocket` is built-in. Don't use `ws`.
-- Prefer `Bun.file` over `node:fs`'s readFile/writeFile
-- Bun.$`ls` instead of execa.
+- `@hono/node-server`'s `serve()` runs the Hono app on Node. Don't use `Bun.serve()` or `express`.
+- `better-sqlite3` for SQLite (this project uses it instead of `bun:sqlite` for sqlite-vec extension-loading compatibility — requires Node, not Bun).
+- `node:fs/promises` (`readFile`/`writeFile`) for file I/O. Don't use `Bun.file`/`Bun.write`.
+- `import.meta.dirname` instead of Bun's `import.meta.dir`.
+- `nub <file>` / `nub watch <file>` instead of `bun <file>` / `bun --watch <file>`.
 
 ## Testing
 

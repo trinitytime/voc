@@ -1,3 +1,4 @@
+import { serve } from '@hono/node-server'
 import { Hono } from 'hono'
 import { cors } from 'hono/cors'
 import { logger } from 'hono/logger'
@@ -111,9 +112,6 @@ const SYNC_INTERVAL_MS = Number(process.env.VOC_SYNC_INTERVAL_MS ?? 5 * 60 * 100
 await bootstrapPlugins()
 startScheduler(SYNC_INTERVAL_MS)
 
-export default {
-  port: 8787,
-  fetch: app.fetch,
-}
-
-console.log('Server running at http://localhost:8787')
+serve({ fetch: app.fetch, port: 8787 }, (info) => {
+  console.log(`Server running at http://localhost:${info.port}`)
+})

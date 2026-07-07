@@ -1,10 +1,10 @@
-import { readdir } from 'node:fs/promises'
+import { readdir, readFile, writeFile } from 'node:fs/promises'
 import { resolve } from 'node:path'
 import { pathToFileURL } from 'node:url'
 import { Plugin, registry, type PluginAPI } from './index'
 import { getCredentials } from '../db/settings'
 
-const PLUGINS_ROOT = resolve(import.meta.dir, '../../../../plugins')
+const PLUGINS_ROOT = resolve(import.meta.dirname, '../../../../plugins')
 const STATE_FILE = resolve(PLUGINS_ROOT, 'plugins.json')
 
 // ---------------------------------------------------------------------------
@@ -13,14 +13,14 @@ const STATE_FILE = resolve(PLUGINS_ROOT, 'plugins.json')
 
 async function readState(): Promise<Record<string, boolean>> {
   try {
-    return await Bun.file(STATE_FILE).json()
+    return JSON.parse(await readFile(STATE_FILE, 'utf8'))
   } catch {
     return {}
   }
 }
 
 export async function writeState(state: Record<string, boolean>): Promise<void> {
-  await Bun.write(STATE_FILE, JSON.stringify(state, null, 2))
+  await writeFile(STATE_FILE, JSON.stringify(state, null, 2))
 }
 
 // ---------------------------------------------------------------------------
@@ -58,7 +58,7 @@ class PluginManager {
     if (this.loaded.has(id)) return this.loaded.get(id)!
 
     const pkgPath = resolve(PLUGINS_ROOT, id, 'package.json')
-    const pkg = await Bun.file(pkgPath).json()
+    const pkg = JSON.parse(await readFile(pkgPath, 'utf8'))
     const entry = pkg.module ?? pkg.main ?? 'src/index.ts'
     const entryPath = resolve(PLUGINS_ROOT, id, entry)
     const mod = await import(pathToFileURL(entryPath).href)
@@ -126,7 +126,7 @@ export async function discoverWithMeta(): Promise<PluginInfo[]> {
     ids.map(async (id) => {
       let pkg: Record<string, unknown> = {}
       try {
-        pkg = await Bun.file(resolve(PLUGINS_ROOT, id, 'package.json')).json()
+        pkg = JSON.parse(await readFile(resolve(PLUGINS_ROOT, id, 'package.json'), 'utf8'))
       } catch {}
 
       return {

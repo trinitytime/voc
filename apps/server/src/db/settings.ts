@@ -1,9 +1,9 @@
-import { Database } from 'bun:sqlite'
+import Database from 'better-sqlite3'
 import { resolve } from 'node:path'
 
-const db = new Database(resolve(import.meta.dir, '../../../settings.db'), { create: true })
+const db = new Database(resolve(import.meta.dirname, '../../../settings.db'))
 
-db.run(`
+db.exec(`
   CREATE TABLE IF NOT EXISTS settings (
     key TEXT PRIMARY KEY,
     value TEXT NOT NULL,
@@ -46,25 +46,23 @@ async function decrypt(data: string, iv: string): Promise<string> {
 export async function saveCredentials(id: string, password: string): Promise<void> {
   const [encId, encPw] = await Promise.all([encrypt(id), encrypt(password)])
   const value = JSON.stringify({ id: encId, pw: encPw })
-  db.run(
+  db.prepare(
     `INSERT INTO settings (key, value, updated_at) VALUES ('credentials', ?, ?)
      ON CONFLICT(key) DO UPDATE SET value = excluded.value, updated_at = excluded.updated_at`,
-    [value, new Date().toISOString()],
-  )
+  ).run(value, new Date().toISOString())
 }
 
 export async function saveLlmConfig(config: Record<string, unknown>): Promise<void> {
   const enc = await encrypt(JSON.stringify(config))
-  db.run(
+  db.prepare(
     `INSERT INTO settings (key, value, updated_at) VALUES ('llm_config', ?, ?)
      ON CONFLICT(key) DO UPDATE SET value = excluded.value, updated_at = excluded.updated_at`,
-    [JSON.stringify(enc), new Date().toISOString()],
-  )
+  ).run(JSON.stringify(enc), new Date().toISOString())
 }
 
 export async function getLlmConfig(): Promise<Record<string, unknown> | null> {
   const row = db
-    .query<{ value: string }, [string]>('SELECT value FROM settings WHERE key = ?')
+    .prepare<[string], { value: string }>('SELECT value FROM settings WHERE key = ?')
     .get('llm_config')
   if (!row) return null
 
@@ -74,7 +72,7 @@ export async function getLlmConfig(): Promise<Record<string, unknown> | null> {
 
 export async function getCredentials(): Promise<{ id: string; password: string } | null> {
   const row = db
-    .query<{ value: string }, [string]>('SELECT value FROM settings WHERE key = ?')
+    .prepare<[string], { value: string }>('SELECT value FROM settings WHERE key = ?')
     .get('credentials')
   if (!row) return null
 
